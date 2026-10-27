@@ -1,0 +1,10 @@
+@'
+.env
+.env.*
+!.env.sample
+node_modules/
+dist/
+.git/
+coverage/
+*.log
+'@ | Set-Content .gitignore

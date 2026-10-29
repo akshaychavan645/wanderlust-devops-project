@@ -1,31 +1,15 @@
-# Stage 1
-FROM node:21 AS backend-builder
-
-# setup the working dir
+FROM node:21 AS deps
 WORKDIR /app
+COPY package*.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 
-# code
+FROM deps AS ci
+ENV CI=true
 COPY . .
+RUN npx jest tests/unit --runInBand --watchAll=false --coverage=false
 
-# packages install
-RUN npm i
-
-# tests
-RUN npm run test
-
-# Stage 2
 FROM node:21-slim
-
-# setup the working dir
 WORKDIR /app
-
-# copy the above stage as compressed
-COPY --from=backend-builder /app .
-
-COPY .env.docker .env
-
-# Port
+COPY --from=ci /app .
 EXPOSE 8080
-
-# App
 CMD ["npm", "start"]
